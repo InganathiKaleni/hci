@@ -8,9 +8,9 @@
     "url": "https://github.com/yourusername/edutend-system.git"
   },
   "scripts": {
-    "start": "python -m http.server 8000",
-    "dev": "python -m http.server 8000",
-    "build": "echo 'Build process would go here'",
+    "start": "node server.js",
+    "dev": "node server.js",
+    "build": "node scripts/build-static.js",
     "test": "echo 'Test process would go here'",
     "lint": "echo 'Linting would go here'",
     "format": "echo 'Code formatting would go here'"
