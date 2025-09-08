@@ -87,6 +87,8 @@ class QRManager {
         if (this.qrCodeInstance) {
             this.qrCodeInstance.clear();
         }
+        // Ensure no leftover canvases/images remain
+        qrcodeContainer.innerHTML = '';
         
         const qrDisplayArea = document.getElementById('qr-display-area');
         const courseSessionInfo = document.getElementById('course-session-info');
