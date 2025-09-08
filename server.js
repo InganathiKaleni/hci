@@ -57,6 +57,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files from the current directory
 app.use(express.static(__dirname));
 
+// Prevent favicon 404 warnings
+app.get('/favicon.ico', (req, res) => {
+    res.status(204).end();
+});
+
 // Authentication routes
 app.post('/api/auth/login', (req, res) => {
     try {
