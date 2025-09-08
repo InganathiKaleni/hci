@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        button { background: #007bff; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; margin: 10px 5px; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; white-space: pre-wrap; font-family: monospace; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔌 Backend Connection Test - EdUTEND System</h1>
+    
+    <div class="test-section">
+        <h2>1. Health Check</h2>
+        <p>Test if the backend server is running and accessible.</p>
+        <button onclick="testHealthCheck()">Test Health Check</button>
+        <div id="healthResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. API Endpoints Test</h2>
+        <p>Test if the main API endpoints are accessible.</p>
+        <button onclick="testAPIEndpoints()">Test API Endpoints</button>
+        <div id="apiResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Configuration Check</h2>
+        <p>Check the current frontend configuration.</p>
+        <button onclick="checkConfiguration()">Check Configuration</button>
+        <div id="configResult" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Network Status</h2>
+        <p>Check network connectivity and CORS settings.</p>
+        <button onclick="checkNetworkStatus()">Check Network Status</button>
+        <div id="networkResult" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Test health check endpoint
+        async function testHealthCheck() {
+            const resultDiv = document.getElementById('healthResult');
+            const button = event.target;
+            
+            try {
+                button.disabled = true;
+                button.textContent = 'Testing...';
+                
+                const response = await fetch('http://localhost:5000/health');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Health Check Successful!\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Health Check Failed!\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `💥 Health Check Error!\n\nError: ${error.message}\n\nThis usually means:\n1. Backend server is not running\n2. Wrong port number\n3. CORS issue\n4. Network connectivity problem`;
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Test Health Check';
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        // Test API endpoints
+        async function testAPIEndpoints() {
+            const resultDiv = document.getElementById('apiResult');
+            const button = event.target;
+            
+            try {
+                button.disabled = true;
+                button.textContent = 'Testing...';
+                
+                const endpoints = [
+                    'http://localhost:5000/api/auth/login',
+                    'http://localhost:5000/api/auth/register',
+                    'http://localhost:5000/api/courses',
+                    'http://localhost:5000/api/attendance',
+                    'http://localhost:5000/api/qr'
+                ];
+                
+                let results = [];
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(endpoint);
+                        results.push({
+                            endpoint,
+                            status: response.status,
+                            accessible: response.status !== 404
+                        });
+                    } catch (error) {
+                        results.push({
+                            endpoint,
+                            status: 'ERROR',
+                            accessible: false,
+                            error: error.message
+                        });
+                    }
+                }
+                
+                resultDiv.className = 'result info';
+                resultDiv.textContent = `📊 API Endpoints Test Results:\n\n${results.map(r => 
+                    `${r.accessible ? '✅' : '❌'} ${r.endpoint}\n   Status: ${r.status}${r.error ? '\n   Error: ' + r.error : ''}`
+                ).join('\n\n')}`;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `💥 API Test Error!\n\nError: ${error.message}`;
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Test API Endpoints';
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        // Check configuration
+        function checkConfiguration() {
+            const resultDiv = document.getElementById('configResult');
+            
+            try {
+                // Check if config is loaded
+                if (typeof API_CONFIG === 'undefined') {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = '❌ API_CONFIG not loaded!\n\nConfiguration files may not be loading correctly.';
+                } else {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Configuration Loaded!\n\nBase URL: ${API_CONFIG.BASE_URL}\nTimeout: ${API_CONFIG.TIMEOUT}ms\n\nEndpoints:\n${JSON.stringify(API_CONFIG.ENDPOINTS, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `💥 Configuration Error!\n\nError: ${error.message}`;
+            } finally {
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        // Check network status
+        async function checkNetworkStatus() {
+            const resultDiv = document.getElementById('networkResult');
+            const button = event.target;
+            
+            try {
+                button.disabled = true;
+                button.textContent = 'Checking...';
+                
+                const tests = [
+                    {
+                        name: 'Localhost Connectivity',
+                        url: 'http://localhost:5000',
+                        description: 'Basic connectivity to localhost:5000'
+                    },
+                    {
+                        name: 'CORS Test',
+                        url: 'http://localhost:5000/health',
+                        description: 'CORS headers and cross-origin request'
+                    },
+                    {
+                        name: 'API Base Test',
+                        url: 'http://localhost:5000/api',
+                        description: 'API base endpoint accessibility'
+                    }
+                ];
+                
+                let results = [];
+                
+                for (const test of tests) {
+                    try {
+                        const response = await fetch(test.url, {
+                            method: 'GET',
+                            mode: 'cors'
+                        });
+                        
+                        results.push({
+                            name: test.name,
+                            status: response.status,
+                            success: true,
+                            description: test.description
+                        });
+                        
+                    } catch (error) {
+                        results.push({
+                            name: test.name,
+                            status: 'ERROR',
+                            success: false,
+                            description: test.description,
+                            error: error.message
+                        });
+                    }
+                }
+                
+                resultDiv.className = 'result info';
+                resultDiv.textContent = `🌐 Network Status Results:\n\n${results.map(r => 
+                    `${r.success ? '✅' : '❌'} ${r.name}\n   Status: ${r.status}\n   Description: ${r.description}${r.error ? '\n   Error: ' + r.error : ''}`
+                ).join('\n\n')}`;
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `💥 Network Check Error!\n\nError: ${error.message}`;
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Check Network Status';
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        // Auto-run health check on page load
+        window.addEventListener('load', () => {
+            console.log('🔌 Backend Connection Test Page Loaded');
+            console.log('💡 Click "Test Health Check" to verify backend connectivity');
+        });
+    </script>
+</body>
+</html>

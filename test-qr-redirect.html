@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Redirect Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        .qr-code {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .info-box {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Redirect Test</h1>
+        <p>This page tests the QR code redirect functionality for the EdUTEND system.</p>
+        
+        <div class="info-box">
+            <h3>How it works:</h3>
+            <ol>
+                <li>Lecturers generate QR codes with redirect information</li>
+                <li>Students scan the QR code with their camera</li>
+                <li>The system automatically redirects to the attendance page</li>
+                <li>Attendance is marked automatically</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h3>Test QR Code with Redirect</h3>
+            <p>This QR code contains redirect information that should automatically take students to the attendance page.</p>
+            
+            <div class="qr-code">
+                <div id="qrcode"></div>
+            </div>
+            
+            <div class="info-box success">
+                <strong>Expected Behavior:</strong> When scanned, this QR code should:
+                <ul>
+                    <li>Show a success notification</li>
+                    <li>Redirect to Student.html#attendance</li>
+                    <li>Automatically mark attendance</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test QR Code without Redirect (Legacy)</h3>
+            <p>This QR code uses the old format without redirect information.</p>
+            
+            <div class="qr-code">
+                <div id="legacy-qrcode"></div>
+            </div>
+            
+            <div class="info-box">
+                <strong>Expected Behavior:</strong> When scanned, this QR code should:
+                <ul>
+                    <li>Show the scan results</li>
+                    <li>Require manual "Mark Attendance" button click</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Instructions</h3>
+            <ol>
+                <li>Open the Student.html page in another tab</li>
+                <li>Navigate to the QR Scanner section</li>
+                <li>Scan the QR codes above using your device's camera</li>
+                <li>Observe the different behaviors</li>
+            </ol>
+            
+            <button class="test-button" onclick="openStudentPage()">Open Student Page</button>
+            <button class="test-button" onclick="generateNewQR()">Generate New Test QR</button>
+        </div>
+    </div>
+
+    <script>
+        // Generate test QR codes
+        function generateTestQR() {
+            const testData = {
+                pin: '123456',
+                courseCode: 'HCI',
+                courseName: 'Human Computer Interaction II',
+                sessionId: 'SHCI' + Date.now(),
+                lecturerId: 'L001',
+                lecturerName: 'Dr. Test Lecturer',
+                createdTime: new Date().toISOString(),
+                status: 'active',
+                type: 'attendance',
+                redirectUrl: 'Student.html#attendance',
+                action: 'mark_attendance'
+            };
+
+            QRCode.toCanvas(document.getElementById('qrcode'), JSON.stringify(testData), {
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function generateLegacyQR() {
+            const legacyData = {
+                pin: '789012',
+                courseCode: 'TEP',
+                courseName: 'Technical Programming I',
+                sessionId: 'STEP' + Date.now(),
+                lecturerId: 'L002',
+                lecturerName: 'Dr. Legacy Lecturer',
+                createdTime: new Date().toISOString(),
+                status: 'active',
+                type: 'attendance'
+                // No redirectUrl or action - this is the legacy format
+            };
+
+            QRCode.toCanvas(document.getElementById('legacy-qrcode'), JSON.stringify(legacyData), {
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function openStudentPage() {
+            window.open('Student.html', '_blank');
+        }
+
+        function generateNewQR() {
+            generateTestQR();
+            generateLegacyQR();
+        }
+
+        // Initialize QR codes when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            generateTestQR();
+            generateLegacyQR();
+        });
+    </script>
+</body>
+</html>
